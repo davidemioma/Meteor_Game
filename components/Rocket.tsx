@@ -7,7 +7,7 @@ type Props = {
 
 const Rocket = ({ degree }: Props) => {
   return (
-    <div>
+    <div className="rocket-shadow">
       <RocketIcon
         style={{
           transform: `rotate(${-45 - degree / 3}deg)`,

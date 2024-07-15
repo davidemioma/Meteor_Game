@@ -59,6 +59,15 @@
   }
 }
 
+@layer components {
+  .boulder-shadow {
+    filter: drop-shadow(10px 10px 5px #00000066);
+  }
+  .rocket-shadow {
+    filter: drop-shadow(3px 3px 2px #00000066);
+  }
+}
+
 @layer base {
   * {
     @apply border-border;
