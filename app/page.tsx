@@ -1,24 +1,36 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
+import { cn } from "@/lib/utils";
 import Rocket from "@/components/Rocket";
 import Boulder from "@/components/Boulder";
+import InfoOverlay from "@/components/InfoOverlay";
 import HandRecogniser, { Result } from "@/components/HandRecogniser";
 
 let isInvincible = false;
+
+let livesRemaining: number;
 
 const Home = () => {
   const rocketRef = useRef(null);
 
   const [degree, setDegree] = useState(0);
 
+  const [distance, setDistance] = useState(0);
+
   const [rocket, setRocket] = useState<any>();
+
+  const [gameOver, setGameOver] = useState(false);
 
   const [isLoading, setIsLoading] = useState(false);
 
   const [isDetected, setIsDetected] = useState(false);
 
+  const [isColliding, setIsColliding] = useState(false);
+
   const [rocketPosition, setRocketPosition] = useState(0);
+
+  const [livesRemainingState, setLivesRemainingState] = useState(0);
 
   const [detectCollisionTrigger, setDetectCollisionTrigger] = useState(0);
 
@@ -52,8 +64,37 @@ const Home = () => {
     setRocket((rocketRef.current as any).getBoundingClientRect());
   };
 
+  const collisionHandler = () => {
+    if (!isInvincible) {
+      // After Collision
+      console.log("COLLISION...");
+
+      isInvincible = true;
+
+      setIsColliding(true);
+
+      livesRemaining--;
+
+      setLivesRemainingState(livesRemaining);
+
+      if (livesRemaining <= 0) {
+        setGameOver(true);
+      }
+
+      setTimeout(() => {
+        isInvincible = false;
+
+        setIsColliding(false);
+      }, 1500);
+    }
+  };
+
   useEffect(() => {
     setRocketPosition(window.innerWidth / 2);
+
+    livesRemaining = 4;
+
+    setLivesRemainingState(livesRemaining);
   }, []);
 
   useEffect(() => {
@@ -91,29 +132,45 @@ const Home = () => {
     };
   }, [isDetected]);
 
-  const collisionHandler = () => {
-    if (!isInvincible) {
-      // After Collision
-      console.log("COLLISION...");
+  useEffect(() => {
+    if (!isDetected) return;
 
-      isInvincible = true;
+    const counter = setInterval(() => {
+      setDistance((prev) => prev + 1);
+    }, 100);
 
-      setTimeout(() => {
-        isInvincible = false;
-      }, 1500);
-    }
-  };
+    return () => {
+      clearInterval(counter);
+    };
+  }, [isDetected]);
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-5 sm:p-10 lg:p-24">
-      <div className="absolute left-3 top-3 z-30 w-32">
+      <InfoOverlay
+        isLoading={isLoading}
+        isDetected={isDetected}
+        isColliding={isColliding}
+        distance={distance}
+        livesRemainingState={livesRemainingState}
+        isGameOver={gameOver}
+      />
+
+      <div
+        className={cn(
+          "absolute left-3 top-3 z-30 transition-all duration-500",
+          isDetected ? "w-32" : "w-64",
+        )}
+      >
         <HandRecogniser
           setHandResult={setHandResult}
           setIsLoading={setIsLoading}
         />
       </div>
 
-      <div id="meteor-container" className="absolute z-10 h-screen w-screen">
+      <div
+        id="meteor-container"
+        className="absolute z-10 h-screen w-screen overflow-hidden"
+      >
         {boulders.map((boulder, index) => (
           <Boulder
             key={boulder.key}
