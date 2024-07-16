@@ -1,18 +1,26 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Rocket from "@/components/Rocket";
 import Boulder from "@/components/Boulder";
 import HandRecogniser, { Result } from "@/components/HandRecogniser";
 
+let isInvincible = false;
+
 const Home = () => {
+  const rocketRef = useRef(null);
+
   const [degree, setDegree] = useState(0);
+
+  const [rocket, setRocket] = useState<any>();
 
   const [isLoading, setIsLoading] = useState(false);
 
   const [isDetected, setIsDetected] = useState(false);
 
   const [rocketPosition, setRocketPosition] = useState(0);
+
+  const [detectCollisionTrigger, setDetectCollisionTrigger] = useState(0);
 
   const [boulders, setBoulders] = useState<
     { key: string; timestamp: number }[]
@@ -24,6 +32,8 @@ const Home = () => {
     setDegree(degree);
 
     if (degree && degree !== 0) {
+      setDetectCollisionTrigger(Math.random());
+
       setRocketPosition((prev) => {
         const position = prev - degree / 6;
 
@@ -38,6 +48,8 @@ const Home = () => {
         return position;
       });
     }
+
+    setRocket((rocketRef.current as any).getBoundingClientRect());
   };
 
   useEffect(() => {
@@ -45,6 +57,8 @@ const Home = () => {
   }, []);
 
   useEffect(() => {
+    if (!isDetected) return;
+
     const boulderInterval = setInterval(() => {
       setBoulders((prev) => {
         let newBolder = [...prev];
@@ -75,7 +89,20 @@ const Home = () => {
 
       clearInterval(removeInterval);
     };
-  }, []);
+  }, [isDetected]);
+
+  const collisionHandler = () => {
+    if (!isInvincible) {
+      // After Collision
+      console.log("COLLISION...");
+
+      isInvincible = true;
+
+      setTimeout(() => {
+        isInvincible = false;
+      }, 1500);
+    }
+  };
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-5 sm:p-10 lg:p-24">
@@ -88,12 +115,19 @@ const Home = () => {
 
       <div id="meteor-container" className="absolute z-10 h-screen w-screen">
         {boulders.map((boulder, index) => (
-          <Boulder key={boulder.key} isDetected={isDetected} />
+          <Boulder
+            key={boulder.key}
+            isDetected={isDetected}
+            rocket={rocket}
+            collisonHandler={collisionHandler}
+            when={detectCollisionTrigger}
+          />
         ))}
       </div>
 
       <div
         id="rocket-container"
+        ref={rocketRef}
         style={{
           position: "absolute",
           left: rocketPosition,

@@ -49,8 +49,6 @@ const processDetections = (
   detections: HandLandmarkerResult,
   setHandResult: (result: Result) => void,
 ) => {
-  console.log(detections);
-
   if (detections && detections.handedness.length > 1) {
     // Note 0 is left hand and 1 is right hand but it might change so
     const rightIndex =
