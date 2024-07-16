@@ -65,7 +65,7 @@ const Home = () => {
   };
 
   const collisionHandler = () => {
-    if (!isInvincible) {
+    if (!isInvincible && !gameOver) {
       // After Collision
       console.log("COLLISION...");
 
@@ -77,7 +77,7 @@ const Home = () => {
 
       setLivesRemainingState(livesRemaining);
 
-      if (livesRemaining <= 0) {
+      if (livesRemaining < 1) {
         setGameOver(true);
       }
 
@@ -98,7 +98,7 @@ const Home = () => {
   }, []);
 
   useEffect(() => {
-    if (!isDetected) return;
+    if (!isDetected || gameOver) return;
 
     const boulderInterval = setInterval(() => {
       setBoulders((prev) => {
@@ -125,24 +125,18 @@ const Home = () => {
       );
     }, 5000);
 
-    return () => {
-      clearInterval(boulderInterval);
-
-      clearInterval(removeInterval);
-    };
-  }, [isDetected]);
-
-  useEffect(() => {
-    if (!isDetected) return;
-
     const counter = setInterval(() => {
       setDistance((prev) => prev + 1);
     }, 100);
 
     return () => {
+      clearInterval(boulderInterval);
+
+      clearInterval(removeInterval);
+
       clearInterval(counter);
     };
-  }, [isDetected]);
+  }, [isDetected, gameOver]);
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-5 sm:p-10 lg:p-24">
