@@ -6,7 +6,7 @@ const Socials = () => {
   return (
     <div className="flex flex-row items-center gap-2">
       <SocialIcon
-        url={"https://github.com/davidemioma"}
+        url={"https://github.com/davidemioma/Meteor_Game"}
         style={{ width: "32px", height: "32px" }}
         bgColor={"black"}
         fgColor={"white"}
